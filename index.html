@@ -1,37 +1,404 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>星际战机 - Space Striker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Orbitron', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; }
-    .btn, .game-title, .plane-name, .mode-name { font-family: 'Orbitron', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif; }
-  </style>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ Cyber Tank Battle · 未来坦克大战</title>
+  <link rel="stylesheet" href="styles/main.css" />
 </head>
 <body>
-  <div id="game-container">
-    <div id="canvas-wrapper">
-      <canvas id="game-canvas"></canvas>
-      <div id="ui-layer"></div>
-    </div>
+  <canvas id="bgCanvas"></canvas>
+
+  <div id="app">
+    <!-- =================================================== -->
+    <!-- 1. 主菜单 -->
+    <section id="screen-menu" class="screen active">
+      <div class="game-logo">
+        <h1>CYBER TANK</h1>
+        <h2>未 来 坦 克 大 战</h2>
+      </div>
+      <div id="hs-display">最高分: 0</div>
+      <div class="menu-btns" style="margin-top:28px;">
+        <button id="btn-start" class="btn btn-primary btn-lg">▶&nbsp;&nbsp;开始游戏</button>
+        <button id="btn-ach" class="btn">🏆&nbsp;&nbsp;成就记录</button>
+        <button id="btn-help" class="btn btn-ghost">📖&nbsp;&nbsp;操作说明</button>
+      </div>
+      <div class="menu-footer">
+        v1.0 · 按 <span style="color:var(--yellow)">Enter</span> 快速开始
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 2. 模式选择 -->
+    <section id="screen-mode" class="screen">
+      <h2 class="section-title">选择游戏模式</h2>
+      <p class="section-sub">单人守卫基地闯关 / 双人同屏决一死战</p>
+      <div class="mode-cards">
+        <div class="panel mode-card" data-mode="single">
+          <div class="corner-tr"></div><div class="corner-bl"></div>
+          <div class="mode-ico">🤖</div>
+          <h3 style="color:var(--cyan); text-shadow:0 0 12px var(--cyan);">单人闯关</h3>
+          <ul>
+            <li>5 关递进难度挑战</li>
+            <li>守卫基地不被摧毁</li>
+            <li>4 类敌人 AI + Boss战</li>
+            <li>技能、道具、升级星级</li>
+          </ul>
+          <div style="text-align:center; margin-top:16px;">
+            <button class="btn btn-mode btn-primary" data-mode="single">选择此模式</button>
+          </div>
+        </div>
+        <div class="panel mode-card magenta" data-mode="versus">
+          <div class="corner-tr"></div><div class="corner-bl"></div>
+          <div class="mode-ico">⚔️</div>
+          <h3 style="color:var(--magenta); text-shadow:0 0 12px var(--magenta);">双人对战</h3>
+          <ul>
+            <li>同屏 PVP 键盘操作</li>
+            <li>先击杀对方 10 次获胜</li>
+            <li>3 张对战地图</li>
+            <li>中央宝箱定时刷新道具</li>
+          </ul>
+          <div style="text-align:center; margin-top:16px;">
+            <button class="btn btn-mode btn-magenta" data-mode="versus">选择此模式</button>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="btn-mode-back" class="btn btn-ghost">← 返回主菜单</button>
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 3. 坦克选择 -->
+    <section id="screen-tank" class="screen">
+      <h2 id="tank-title" class="section-title">选择你的战车</h2>
+      <p class="section-sub">4 种差异化坦克，技能属性各有千秋</p>
+      <div class="tank-select-wrap">
+        <!-- P1 -->
+        <div id="p1-tank-panel" class="tank-panel">
+          <h3 style="color:var(--cyan); text-align:center; letter-spacing:2px;">
+            &lt; P1 · 玩家一 &gt;
+          </h3>
+          <div id="p1-tanks" class="tank-cards">
+            <div class="tank-card" data-type="main" selected style="--tc:var(--cyan)">
+              <div class="tank-avatar">🛡️</div>
+              <h4 style="color:var(--cyan)">主战坦克</h4>
+              <div class="tank-num">按 1 / A</div>
+            </div>
+            <div class="tank-card" data-type="assault" style="--tc:var(--magenta)">
+              <div class="tank-avatar">💨</div>
+              <h4 style="color:var(--magenta)">突击战车</h4>
+              <div class="tank-num">按 2 / S</div>
+            </div>
+            <div class="tank-card" data-type="heavy" style="--tc:var(--orange)">
+              <div class="tank-avatar">💣</div>
+              <h4 style="color:var(--orange)">重炮坦克</h4>
+              <div class="tank-num">按 3 / D</div>
+            </div>
+            <div class="tank-card" data-type="sniper" style="--tc:var(--green)">
+              <div class="tank-avatar">🎯</div>
+              <h4 style="color:var(--green)">狙击坦克</h4>
+              <div class="tank-num">按 4 / F</div>
+            </div>
+          </div>
+          <div id="p1-stats" class="tank-stats panel" style="padding:14px 16px;">
+            <div class="corner-tr"></div><div class="corner-bl"></div>
+          </div>
+        </div>
+
+        <!-- P2 -->
+        <div id="p2-tank-panel" class="tank-panel" style="display:none;">
+          <h3 style="color:var(--magenta); text-align:center; letter-spacing:2px;">
+            &lt; P2 · 玩家二 &gt;
+          </h3>
+          <div id="p2-tanks" class="tank-cards">
+            <div class="tank-card" data-type="main" selected style="--tc:var(--cyan)">
+              <div class="tank-avatar">🛡️</div>
+              <h4 style="color:var(--cyan)">主战坦克</h4>
+            </div>
+            <div class="tank-card" data-type="assault" style="--tc:var(--magenta)">
+              <div class="tank-avatar">💨</div>
+              <h4 style="color:var(--magenta)">突击战车</h4>
+            </div>
+            <div class="tank-card" data-type="heavy" style="--tc:var(--orange)">
+              <div class="tank-avatar">💣</div>
+              <h4 style="color:var(--orange)">重炮坦克</h4>
+            </div>
+            <div class="tank-card" data-type="sniper" style="--tc:var(--green)">
+              <div class="tank-avatar">🎯</div>
+              <h4 style="color:var(--green)">狙击坦克</h4>
+            </div>
+          </div>
+          <div id="p2-stats" class="tank-stats panel" style="padding:14px 16px;">
+            <div class="corner-tr"></div><div class="corner-bl"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:28px;">
+        <button id="btn-tank-back" class="btn btn-ghost">← 返回</button>
+        <button id="btn-tank-next" class="btn btn-primary btn-lg">下一步 →</button>
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 4. 地图选择（双人模式） -->
+    <section id="screen-map" class="screen">
+      <h2 class="section-title">选择对战地图</h2>
+      <p class="section-sub">3 张各具特色的对战场地</p>
+      <div class="map-cards">
+        <div class="map-card selected">
+          <div class="map-thumb"></div>
+          <h4 style="color:var(--cyan)">战场1 · 对称经典</h4>
+          <p>中央掩体分隔，左右对称布局。适合快速上手的标准对战。</p>
+        </div>
+        <div class="map-card">
+          <div class="map-thumb" style="background: radial-gradient(ellipse at center, rgba(27,111,224,0.4), transparent 60%), #0a0f1e;"></div>
+          <h4 style="color:var(--magenta)">战场2 · 水域要塞</h4>
+          <p>中央河流阻隔，仅留 4 个通道。战术性极强的狙击乐园。</p>
+        </div>
+        <div class="map-card">
+          <div class="map-thumb" style="background:
+            linear-gradient(45deg, transparent 46%, rgba(255,138,0,0.25) 46%, rgba(255,138,0,0.25) 54%, transparent 54%),
+            linear-gradient(-45deg, transparent 46%, rgba(0,229,255,0.2) 46%, rgba(0,229,255,0.2) 54%, transparent 54%),
+            #0a0f1e;"></div>
+          <h4 style="color:var(--yellow)">战场3 · 混乱迷宫</h4>
+          <p>充满随机砖墙掩体的迷宫地图，近距离遭遇战频发。</p>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button id="btn-map-back" class="btn btn-ghost">← 返回</button>
+        <button id="btn-map-start" class="btn btn-primary btn-magenta btn-lg">开始对战 ⚔️</button>
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 5. 游戏界面 -->
+    <section id="screen-game" class="screen">
+      <div class="game-layout">
+        <!-- HUD TOP -->
+        <!-- 单人HUD -->
+        <div id="hud-single" class="game-hud-top" style="display:contents;">
+          <div class="hud-block">
+            <div id="p1-tag" class="hud-tag">P1</div>
+            <div class="hud-info">
+              <div class="hp-wrap">
+                <div class="hp-bar-hud"><div id="p1-hp-bar" style="width:100%;"></div></div>
+                <span id="p1-hp-text" class="hp-text">800 / 800</span>
+              </div>
+              <div class="hud-stats-line">
+                <div>❤️ <span id="p1-lives" class="value">❤️❤️❤️</span></div>
+                <div id="p1-star"></div>
+                <div>得分 <span id="p1-score" class="value">0</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="hud-block center">
+            <div class="center-info">
+              <div class="map-name" id="level-name">Lv1 新兵训练营</div>
+              <div class="map-prog">敌人: <span id="p1-kill-prog">0 / 15</span> · 道具拾取越多越好</div>
+            </div>
+          </div>
+          <div class="hud-block" style="justify-content:flex-end; gap:8px;">
+            <div id="p1-buffs" class="buffs-row"></div>
+            <div class="hud-controls">
+              <button id="btn-mute" class="icon-btn mute-btn">🔊</button>
+              <button id="btn-pause" class="icon-btn">⏸</button>
+              <button id="btn-quit" class="icon-btn">✕</button>
+            </div>
+          </div>
+        </div>
+        <!-- 双人HUD -->
+        <div id="hud-versus" class="game-hud-top" style="display:none;">
+          <div class="hud-block">
+            <div id="p1-tag" class="hud-tag">P1</div>
+            <div class="hud-info">
+              <div class="hp-wrap">
+                <div class="hp-bar-hud"><div id="p1-hp-bar" style="width:100%;"></div></div>
+                <span id="p1-hp-text" class="hp-text">800 / 800</span>
+              </div>
+              <div id="p1-buffs" class="buffs-row"></div>
+            </div>
+          </div>
+          <div class="hud-block center">
+            <div class="versus-score">
+              <span class="k-p1"><span id="versus-kills-1">0</span></span>
+              <span class="sep">:</span>
+              <span class="k-p2"><span id="versus-kills-2">0</span></span>
+            </div>
+          </div>
+          <div class="hud-block p2">
+            <div class="hud-info" style="align-items:flex-end;">
+              <div class="hp-wrap" style="flex-direction:row-reverse;">
+                <div class="hp-bar-hud"><div id="p2-hp-bar" style="width:100%;"></div></div>
+                <span id="p2-hp-text" class="hp-text">800 / 800</span>
+              </div>
+              <div id="p2-buffs" class="buffs-row" style="justify-content:flex-end;"></div>
+            </div>
+            <div id="p2-tag" class="hud-tag p2">P2</div>
+            <div class="hud-controls" style="margin-left:8px;">
+              <button id="btn-mute" class="icon-btn mute-btn">🔊</button>
+              <button id="btn-pause" class="icon-btn">⏸</button>
+              <button id="btn-quit" class="icon-btn">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 游戏画布 -->
+        <canvas id="gameCanvas" width="832" height="576"></canvas>
+
+        <!-- HUD BOTTOM: 技能条 -->
+        <div id="hud-single-bottom" class="game-hud-bottom" style="display:contents;">
+          <div class="hud-block">
+            <div style="font-size:12px; color:var(--text-dim); margin-right:6px;">P1技能</div>
+            <div id="p1-skills" class="skills-row"></div>
+            <div id="p1-nuke" class="nuke-icon" style="margin-left:8px;">
+              <div class="nuke-cd"></div>
+              <div class="sk-ico">💥</div>
+              <div class="sk-key">空格</div>
+              <div class="nuke-cd-text">就绪</div>
+            </div>
+            <div style="margin-left:16px; font-size:11px; color:var(--text-dim); line-height:1.6;">
+              <div>WASD 移动 · J 射击</div>
+              <div>Q/E/R/F 技能 · 长按空格 大招</div>
+            </div>
+          </div>
+        </div>
+        <!-- 双人底部HUD -->
+        <div id="hud-versus-bottom" class="game-hud-bottom" style="display:none;">
+          <div class="hud-block">
+            <div style="font-size:12px; color:var(--cyan); margin-right:6px; font-weight:700;">P1</div>
+            <div id="p1-skills" class="skills-row"></div>
+            <div id="p1-nuke" class="nuke-icon" style="margin-left:6px;">
+              <div class="nuke-cd"></div>
+              <div class="sk-ico">💥</div>
+              <div class="sk-key">空格</div>
+              <div class="nuke-cd-text">就绪</div>
+            </div>
+            <div style="margin-left:12px; font-size:11px; color:var(--text-dim); line-height:1.6;">
+              <div>移动: WASD · 射击: J</div>
+              <div>技能: Q/E/R/F</div>
+            </div>
+          </div>
+          <div class="hud-block p2">
+            <div style="margin-right:12px; font-size:11px; color:var(--text-dim); line-height:1.6; text-align:right;">
+              <div>射击: 小键盘1 · 移动: ↑↓←→</div>
+              <div>技能: U/O/I/K</div>
+            </div>
+            <div id="p2-nuke" class="nuke-icon" style="margin-right:6px;">
+              <div class="nuke-cd"></div>
+              <div class="sk-ico">💥</div>
+              <div class="sk-key">0</div>
+              <div class="nuke-cd-text">就绪</div>
+            </div>
+            <div id="p2-skills" class="skills-row"></div>
+            <div style="font-size:12px; color:var(--magenta); margin-left:6px; font-weight:700;">P2</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 6. 操作说明 -->
+    <section id="screen-help" class="screen">
+      <div class="panel" style="padding:28px 36px;">
+        <div class="corner-tr"></div><div class="corner-bl"></div>
+        <h2 class="section-title" style="font-size:26px; margin-bottom:4px;">操作说明</h2>
+        <p class="section-sub" style="margin-bottom:6px;">熟悉按键，驰骋战场！</p>
+
+        <div class="help-grid">
+          <div class="help-col">
+            <h4>🤖 单人模式 / 玩家一 (P1)</h4>
+            <div class="help-row"><span class="lbl">上 / 下 / 左 / 右</span>
+              <span class="kbds"><span class="kbd">W</span><span class="kbd">S</span><span class="kbd">A</span><span class="kbd">D</span></span></div>
+            <div class="help-row"><span class="lbl">射击</span><span class="kbd">J</span></div>
+            <div class="help-row"><span class="lbl">技能1 · 追踪导弹</span><span class="kbd">Q</span></div>
+            <div class="help-row"><span class="lbl">技能2 · 地雷阵</span><span class="kbd">E</span></div>
+            <div class="help-row"><span class="lbl">技能3 · 激光射线</span><span class="kbd">R</span></div>
+            <div class="help-row"><span class="lbl">技能4 · 能量护盾</span><span class="kbd">F</span></div>
+            <div class="help-row"><span class="lbl">大招 · 核弹轰炸（长按）</span><span class="kbd">空格</span></div>
+          </div>
+
+          <div class="help-col p2">
+            <h4>⚔️ 玩家二 (P2) - 双人对战</h4>
+            <div class="help-row"><span class="lbl">上 / 下 / 左 / 右</span>
+              <span class="kbds"><span class="kbd">↑</span><span class="kbd">↓</span><span class="kbd">←</span><span class="kbd">→</span></span></div>
+            <div class="help-row"><span class="lbl">射击</span><span class="kbd">小键盘1</span></div>
+            <div class="help-row"><span class="lbl">技能1 · 追踪导弹</span><span class="kbd">U</span></div>
+            <div class="help-row"><span class="lbl">技能2 · 地雷阵</span><span class="kbd">O</span></div>
+            <div class="help-row"><span class="lbl">技能3 · 激光射线</span><span class="kbd">I</span></div>
+            <div class="help-row"><span class="lbl">技能4 · 能量护盾</span><span class="kbd">K</span></div>
+            <div class="help-row"><span class="lbl">大招 · 核弹轰炸（长按）</span><span class="kbd">小键盘0</span></div>
+          </div>
+        </div>
+
+        <div class="global-help">
+          <strong>全局热键：</strong>
+          暂停 <span class="kbd">ESC</span> / <span class="kbd">P</span> ·
+          静音 <span class="kbd">M</span>
+          <br />
+          <strong>游戏目标：</strong>
+          单人模式消灭所有敌方坦克并保护基地；双人模式率先击杀对方 10 次的玩家获胜！
+          <br />
+          <strong>道具提示：</strong>
+          拾取场地道具（⭐升级 / 🛡️护盾 / ⚡加速 / 🔥急速射击 / 💥穿甲弹 / 💊加血 / ❤️加命 / 👻隐身）可大幅提升战斗优势！
+        </div>
+
+        <div style="text-align:center; margin-top:24px;">
+          <button id="btn-go-help" class="btn btn-primary">知道了！</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 7. 成就面板 -->
+    <section id="screen-ach" class="screen">
+      <div class="panel" style="padding:28px 36px;">
+        <div class="corner-tr"></div><div class="corner-bl"></div>
+        <h2 class="section-title" style="font-size:26px; margin-bottom:0;">🏆 成就记录</h2>
+        <p class="section-sub" style="margin:4px 0 0;">解锁所有勋章，成为传奇指挥官！</p>
+        <div id="ach-list" class="ach-list"></div>
+        <div style="text-align:center; margin-top:20px;">
+          <button onclick="UI.showScreen('screen-menu')" class="btn btn-ghost">← 返回主菜单</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================== -->
+    <!-- 8. 结算界面 -->
+    <section id="screen-result" class="screen">
+      <div class="panel" style="padding:40px 60px; text-align:center; min-width:480px;">
+        <div class="corner-tr"></div><div class="corner-bl"></div>
+        <span class="result-win">🎉</span>
+        <span class="result-lose" style="display:none;">💥</span>
+        <h1 class="result-title">胜利！</h1>
+        <p class="result-reason">通过 Lv1 新兵训练营</p>
+        <div class="result-stats"></div>
+        <div class="btn-row">
+          <button id="btn-again" class="btn btn-primary btn-lg">🔁 再来一局</button>
+          <button id="btn-menu" class="btn btn-ghost">🏠 回主菜单</button>
+        </div>
+      </div>
+    </section>
+
   </div>
-  <script src="js/utils.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/input.js"></script>
-  <script src="js/particle.js"></script>
-  <script src="js/bullet.js"></script>
-  <script src="js/powerup.js"></script>
-  <script src="js/player.js"></script>
-  <script src="js/enemy.js"></script>
-  <script src="js/boss.js"></script>
-  <script src="js/scenes.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/main.js"></script>
+
+  <!-- =================================================== -->
+  <!-- Script 加载顺序：配置→工具→实体→主引擎→UI→入口 -->
+  <script src="src/config.js"></script>
+  <script src="src/utils/input.js"></script>
+  <script src="src/utils/audio.js"></script>
+  <script src="src/utils/storage.js"></script>
+  <script src="src/utils/particles.js"></script>
+  <script src="src/game/GameMap.js"></script>
+  <script src="src/game/Bullet.js"></script>
+  <script src="src/game/PowerUp.js"></script>
+  <script src="src/game/Mine.js"></script>
+  <script src="src/game/Skill.js"></script>
+  <script src="src/game/AIController.js"></script>
+  <script src="src/game/Tank.js"></script>
+  <script src="src/game/Game.js"></script>
+  <script src="src/ui/ui.js"></script>
+  <script src="src/main.js"></script>
 </body>
 </html>
